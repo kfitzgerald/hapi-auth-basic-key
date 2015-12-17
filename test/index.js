@@ -213,7 +213,7 @@ it('returns an error on bad header format', (done) => {
     });
 });
 
-it('returns an error on bad header internal syntax', (done) => {
+it('returns a reply on bad header internal syntax', (done) => {
 
     const server = new Hapi.Server();
     server.connection();
@@ -238,7 +238,7 @@ it('returns an error on bad header internal syntax', (done) => {
         server.inject(request, (res) => {
 
             expect(res.result).to.exist();
-            expect(res.statusCode).to.equal(400);
+            expect(res.statusCode).to.equal(401);
             expect(res.result.isMissing).to.equal(undefined);
             done();
         });

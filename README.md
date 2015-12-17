@@ -1,15 +1,15 @@
-### hapi-auth-basic
+### hapi-auth-basic-key
 
-[![Build Status](https://secure.travis-ci.org/hapijs/hapi-auth-basic.svg)](http://travis-ci.org/hapijs/hapi-auth-basic)
+Fork of [hapi-auth-basic](http://travis-ci.org/hapijs/hapi-auth-basic) that is intended to handle API keys as the 
+username field of HTTP basic auth requests. The password portion of the authorization is available, but not necessary.
 
-Lead Maintainer: [Matt Harrison](https://github.com/mtharrison)
 
 Basic authentication requires validating a username and password combination. The `'basic'` scheme takes the following options:
 
 - `validateFunc` - (required) a user lookup and password validation function with the signature `function(request, username, password, callback)` where:
     - `request` - is the hapi request object of the request which is being authenticated.
-    - `username` - the username received from the client.
-    - `password` - the password received from the client.
+    - `username` - the username (api key) received from the client.
+    - `password` - the password received from the client. Not necessarily required unless you want it to be.
     - `callback` - a callback function with the signature `function(err, isValid, credentials)` where:
         - `err` - an internal error.
         - `isValid` - `true` if both the username was found and the password matched, otherwise `false`.
@@ -20,31 +20,25 @@ Basic authentication requires validating a username and password combination. Th
 - `unauthorizedAttributes` - (optional) if set, passed directly to [Boom.unauthorized](https://github.com/hapijs/boom#boomunauthorizedmessage-scheme-attributes). Useful for setting realm attribute in WWW-Authenticate header. Defaults to `undefined`.
 
 ```javascript
-const Bcrypt = require('bcrypt');
 
-const users = {
-    john: {
-        username: 'john',
-        password: '$2a$10$iqJSHD.BGr0E2IxQwYgJmeP3NvhPrXAeLSaGCj6IR/XU5QtjVu5Tm',   // 'secret'
-        name: 'John Doe',
-        id: '2133d32a'
+const keys = {
+    super_secret_api_key: {
+        id: '2133d32a',
+        name: 'my really cool app'
     }
 };
 
 const validate = function (request, username, password, callback) {
 
-    const user = users[username];
-    if (!user) {
+    const key = keys[username];
+    if (!key) {
         return callback(null, false);
-    }
+    } 
 
-    Bcrypt.compare(password, user.password, (err, isValid) => {
-
-        callback(err, isValid, { id: user.id, name: user.name });
-    });
+    callback(err, true, key);
 };
 
-server.register(require('hapi-auth-basic'), (err) => {
+server.register(require('hapi-auth-basic-key'), (err) => {
 
     server.auth.strategy('simple', 'basic', { validateFunc: validate });
     server.route({ method: 'GET', path: '/', config: { auth: 'simple' } });

@@ -1,8 +1,8 @@
 {
-  "name": "hapi-auth-basic",
-  "description": "Basic authentication plugin",
-  "version": "4.1.0",
-  "repository": "git://github.com/hapijs/hapi-auth-basic",
+  "name": "hapi-auth-basic-key",
+  "description": "Basic api-key-as-username authentication plugin",
+  "version": "4.1.0-key",
+  "repository": "git://github.com/kfitzgerald/hapi-auth-basic-key",
   "main": "lib/index.js",
   "keywords": [
     "hapi",
