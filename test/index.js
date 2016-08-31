@@ -96,7 +96,7 @@ it('returns a reply on successful double auth', (done) => {
 
         expect(err).to.not.exist();
         server.auth.strategy('default', 'basic', 'required', { validateFunc: internals.user });
-        server.route({ method: 'POST', path: '/', handler: handler });
+        server.route({ method: 'POST', path: '/', handler });
         server.route({
             method: 'POST',
             path: '/inner',
