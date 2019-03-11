@@ -1,6 +1,9 @@
-### hapi-auth-basic
+### hapi-auth-basic-key
 
-[![Build Status](https://secure.travis-ci.org/hapijs/hapi-auth-basic.svg)](http://travis-ci.org/hapijs/hapi-auth-basic)
+[![Build Status](https://secure.travis-ci.org/kfitzgerald/hapi-auth-basic.svg)](http://travis-ci.org/kfitzgerald/hapi-auth-basic)
+
+Fork of [hapi-auth-basic](http://github.com/hapijs/hapi-auth-basic) that is intended to handle API keys as the 
+username field of HTTP basic auth requests. The password portion of the authorization is available, but not required. Could be useful for session tokens.
 
 Lead Maintainer: [Matt Harrison](https://github.com/mtharrison)
 
@@ -8,8 +11,8 @@ Basic authentication requires validating a username and password combination. Th
 
 - `validate` - (required) a user lookup and password validation function with the signature `[async] function(request, username, password, h)` where:
     - `request` - is the hapi request object of the request which is being authenticated.
-    - `username` - the username received from the client.
-    - `password` - the password received from the client.
+    - `username` - the username (api key) received from the client.
+    - `password` - (optional) the password received from the client. Useful for session tokens.
     - `h` - the response toolkit.
     - Returns an object `{ isValid, credentials, response }` where:
         - `isValid` - `true` if both the username was found and the password matched, otherwise `false`.
@@ -21,40 +24,32 @@ Basic authentication requires validating a username and password combination. Th
 - `unauthorizedAttributes` - (optional) if set, passed directly to [Boom.unauthorized](https://github.com/hapijs/boom#boomunauthorizedmessage-scheme-attributes) if no custom `err` is thrown. Useful for setting realm attribute in WWW-Authenticate header. Defaults to `undefined`.
 
 ```javascript
-const Bcrypt = require('bcrypt');
 const Hapi = require('hapi');
 
-const users = {
-    john: {
-        username: 'john',
-        password: '$2a$10$iqJSHD.BGr0E2IxQwYgJmeP3NvhPrXAeLSaGCj6IR/XU5QtjVu5Tm',   // 'secret'
-        name: 'John Doe',
+const keys = {
+    SUPER_SECRET_API_KEY: { // <-- Your API key
+        name: 'Your Api Key Name',
         id: '2133d32a'
     }
 };
 
 const validate = async (request, username, password, h) => {
-
-    if (username === 'help') {
-        return { response: h.redirect('https://hapijs.com/help') };     // custom response
-    }
-
-    const user = users[username];
-    if (!user) {
+    
+    const key = keys[username]; // username=api key
+    if (!key) {
         return { credentials: null, isValid: false };
-    }
-
-    const isValid = await Bcrypt.compare(password, user.password);
-    const credentials = { id: user.id, name: user.name };
-
-    return { isValid, credentials };
+    } 
+    
+    // could further validate password if using it as a session token or something
+    
+    return { credentials: key, isValid: true };
 };
 
 const main = async () => {
 
     const server = Hapi.server({ port: 4000 });
 
-    await server.register(require('hapi-auth-basic'));
+    await server.register(require('hapi-auth-basic-key'));
 
     server.auth.strategy('simple', 'basic', { validate });
     server.auth.default('simple');
@@ -65,7 +60,8 @@ const main = async () => {
         handler: function (request, h) {
 
             return 'welcome';
-        }
+        },
+        // config: { auth: 'simple' } // if not applied globally
     });
 
     await server.start();
@@ -73,9 +69,7 @@ const main = async () => {
     return server;
 };
 
-main()
-.then((server) => console.log(`Server listening on ${server.info.uri}`))
-.catch((err) => {
+main().then((server) => console.log(`Server listening on ${server.info.uri}`)).catch((err) => {
 
     console.error(err);
     process.exit(1);

@@ -24,7 +24,7 @@ it('returns a reply on successful auth', async () => {
 
     const server = Hapi.server();
     await server.register(require('../'));
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
 
     server.route({
         method: 'POST',
@@ -38,7 +38,7 @@ it('returns a reply on successful auth', async () => {
         }
     });
 
-    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('john', '123:45') } };
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('SUPERSECRETAPIKEY', '123:45') } };
     const res = await server.inject(request);
 
     expect(res.result).to.equal('ok');
@@ -48,7 +48,7 @@ it('returns an error on wrong scheme', async () => {
 
     const server = Hapi.server();
     await server.register(require('../'));
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
 
     server.route({
         method: 'POST',
@@ -72,7 +72,7 @@ it('returns a reply on successful double auth', async () => {
 
     const handler = async function (request, h) {
 
-        const options = { method: 'POST', url: '/inner', headers: { authorization: internals.header('john', '123:45') }, credentials: request.auth.credentials };
+        const options = { method: 'POST', url: '/inner', headers: { authorization: internals.header('SUPERSECRETAPIKEY', '123:45') }, auth: request.auth.credentials };
         const res = await server.inject(options);
 
         return res.result;
@@ -81,7 +81,7 @@ it('returns a reply on successful double auth', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
 
     server.route({ method: 'POST', path: '/', handler });
     server.route({
@@ -96,7 +96,7 @@ it('returns a reply on successful double auth', async () => {
         }
     });
 
-    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('john', '123:45') } };
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('SUPERSECRETAPIKEY', '123:45') } };
 
     const res = await server.inject(request);
 
@@ -109,7 +109,7 @@ it('returns a reply on failed optional auth', async () => {
 
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -131,12 +131,12 @@ it('returns a reply on failed optional auth', async () => {
     expect(res.result).to.equal('ok');
 });
 
-it('returns an error on bad password', async () => {
+it('ignores password', async () => {
 
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -149,10 +149,10 @@ it('returns an error on bad password', async () => {
         }
     });
 
-    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('john', 'abcd') } };
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('SUPERSECRETAPIKEY', 'abcd') } };
 
     const res = await server.inject(request);
-    expect(res.statusCode).to.equal(401);
+    expect(res.statusCode).to.equal(200);
 });
 
 it('returns an error on bad header format', async () => {
@@ -160,7 +160,7 @@ it('returns an error on bad header format', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -187,7 +187,7 @@ it('returns an error on bad header internal syntax', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -205,7 +205,7 @@ it('returns an error on bad header internal syntax', async () => {
     const res = await server.inject(request);
 
     expect(res.result).to.exist();
-    expect(res.statusCode).to.equal(400);
+    expect(res.statusCode).to.equal(401);
     expect(res.result.isMissing).to.equal(undefined);
 });
 
@@ -214,7 +214,7 @@ it('returns an error on missing username', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -267,7 +267,7 @@ it('returns an error on unknown user', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -292,7 +292,7 @@ it('replies with thrown custom error', async () => {
     const server = Hapi.server({ debug: false });
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -305,7 +305,7 @@ it('replies with thrown custom error', async () => {
         }
     });
 
-    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('jane', '123:45') } };
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('BADAPIKEY', '123:45') } };
 
     const res = await server.inject(request);
 
@@ -319,7 +319,7 @@ it('replies with response response', async () => {
     const server = Hapi.server({ debug: false });
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -332,7 +332,7 @@ it('replies with response response', async () => {
         }
     });
 
-    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('bob', '123:45') } };
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('REDIRECTAPIKEY', '123:45') } };
 
     const res = await server.inject(request);
 
@@ -345,7 +345,7 @@ it('returns an error on non-object credentials error', async () => {
     const server = Hapi.server({ debug: false });
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -371,7 +371,7 @@ it('returns an error on missing credentials error', async () => {
     const server = Hapi.server({ debug: false });
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -397,7 +397,7 @@ it('returns an error on insufficient scope', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -413,7 +413,7 @@ it('returns an error on insufficient scope', async () => {
         }
     });
 
-    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('john', '123:45') } };
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('SUPERSECRETAPIKEY', '123:45') } };
 
     const res = await server.inject(request);
 
@@ -426,7 +426,7 @@ it('returns an error on insufficient scope specified as an array', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
 
     server.route({
         method: 'POST',
@@ -443,7 +443,7 @@ it('returns an error on insufficient scope specified as an array', async () => {
         }
     });
 
-    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('john', '123:45') } };
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('SUPERSECRETAPIKEY', '123:45') } };
 
     const res = await server.inject(request);
 
@@ -456,7 +456,7 @@ it('authenticates scope specified as an array', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         method: 'POST',
         path: '/',
@@ -472,7 +472,7 @@ it('authenticates scope specified as an array', async () => {
         }
     });
 
-    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('john', '123:45') } };
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('SUPERSECRETAPIKEY', '123:45') } };
 
     const res = await server.inject(request);
 
@@ -486,7 +486,7 @@ it('should ask for credentials if server has one default strategy', async () => 
     await server.register(require('../'));
 
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
     server.route({
         path: '/',
         method: 'GET',
@@ -499,7 +499,7 @@ it('should ask for credentials if server has one default strategy', async () => 
         }
     });
 
-    const validOptions = { method: 'GET', url: '/', headers: { authorization: internals.header('john', '123:45') } };
+    const validOptions = { method: 'GET', url: '/', headers: { authorization: internals.header('SUPERSECRETAPIKEY', '123:45') } };
     const res1 = await server.inject(validOptions);
 
     expect(res1.result).to.exist();
@@ -517,7 +517,7 @@ it('cannot add a route that has payload validation required', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
 
     const fn = function () {
 
@@ -546,7 +546,7 @@ it('cannot add a route that has payload validation as optional', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
 
     const fn = function () {
 
@@ -575,7 +575,7 @@ it('can add a route that has payload validation as none', async () => {
     const server = Hapi.server();
     await server.register(require('../'));
 
-    server.auth.strategy('default', 'basic', { validate: internals.user });
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
 
     const fn = function () {
 
@@ -605,7 +605,7 @@ it('includes additional attributes in WWW-Authenticate header', async () => {
     await server.register(require('../'));
 
     server.auth.strategy('default', 'basic', {
-        validate: internals.user,
+        validate: internals.apikey,
         unauthorizedAttributes: { realm: 'hapi' }
     });
 
@@ -630,31 +630,57 @@ it('includes additional attributes in WWW-Authenticate header', async () => {
     expect(res.headers[wwwAuth]).to.equal('Basic realm=\"hapi\"');
 });
 
+it('returns credentials even when invalid', async () => {
+
+    const server = Hapi.server({ debug: false });
+    await server.register(require('../'));
+
+    server.auth.strategy('default', 'basic', { validate: internals.apikey });
+    server.route({
+        method: 'POST',
+        path: '/',
+        handler: function (request, h) {
+
+            return 'ok';
+        },
+        options: {
+            auth: 'default'
+        }
+    });
+
+    const request = { method: 'POST', url: '/', headers: { authorization: internals.header('invalid3', '123:45') } };
+
+    const res = await server.inject(request);
+
+    expect(res.result).to.exist();
+    expect(res.statusCode).to.equal(401);
+});
+
 
 internals.header = function (username, password) {
 
-    return 'Basic ' + (new Buffer(username + ':' + password, 'utf8')).toString('base64');
+    return 'Basic ' + (Buffer.from(username + ':' + password, 'utf8')).toString('base64');
 };
 
 
-internals.user = async function (request, username, password, h) {
+internals.apikey = async function (request, username, password, h) {
 
-    if (username === 'john') {
+    if (username === 'SUPERSECRETAPIKEY') {
         return await Promise.resolve({
-            isValid: password === '123:45',
+            isValid: true,
             credentials: {
-                user: 'john',
+                user: 'SUPERSECRETAPIKEY',
                 scope: ['a'],
                 tos: '1.0.0'
             }
         });
     }
 
-    if (username === 'jane') {
+    if (username === 'BADAPIKEY') {
         throw Boom.badRequest('Some other problem');
     }
 
-    if (username === 'bob') {
+    if (username === 'REDIRECTAPIKEY') {
         return await Promise.resolve({ response: h.redirect('https://hapijs.com') });
     }
 
@@ -669,6 +695,13 @@ internals.user = async function (request, username, password, h) {
         return await Promise.resolve({
             isValid: true,
             credentials: null
+        });
+    }
+
+    if (username === 'invalid3') {
+        return await Promise.resolve({
+            isValid: false,
+            credentials: { coverage: true }
         });
     }
 
