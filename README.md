@@ -1,6 +1,6 @@
 ### hapi-auth-basic-key
 
-[![Build Status](https://secure.travis-ci.org/kfitzgerald/hapi-auth-basic.svg)](http://travis-ci.org/kfitzgerald/hapi-auth-basic)
+[![Build Status](https://secure.travis-ci.org/kfitzgerald/hapi-auth-basic-key.svg)](http://travis-ci.org/kfitzgerald/hapi-auth-basic-key)
 
 Fork of [hapi-auth-basic](http://github.com/hapijs/hapi-auth-basic) that is intended to handle API keys as the 
 username field of HTTP basic auth requests. The password portion of the authorization is available, but not required. Could be useful for session tokens.
