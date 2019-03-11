@@ -5,8 +5,6 @@
 Fork of [hapi-auth-basic](http://github.com/hapijs/hapi-auth-basic) that is intended to handle API keys as the 
 username field of HTTP basic auth requests. The password portion of the authorization is available, but not required. Could be useful for session tokens.
 
-Lead Maintainer: [Matt Harrison](https://github.com/mtharrison)
-
 Basic authentication requires validating a username and password combination. The `'basic'` scheme takes the following options:
 
 - `validate` - (required) a user lookup and password validation function with the signature `[async] function(request, username, password, h)` where:
