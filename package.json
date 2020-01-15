@@ -28,7 +28,7 @@
     "lab": "18.x.x"
   },
   "scripts": {
-    "test": "lab -a code -t 100 -L -I this",
+    "test": "lab -a code -t 100 -L -I globalThis",
     "test-cov-html": "lab -a code -r html -o coverage.html"
   },
   "license": "BSD-3-Clause"
